@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="SensorControlApp">
+<head>
+  <title>Demo</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+  <script src="deviceListController.js"></script>
+</head>
+
+<body>
+
+<div class="navbar navbar-inverse navbar-static-top">
+   <div class="navbar-left">
+       <a href="#" class="navbar-brand">Brand</a>
+   </div>
+</div>
+
+<div class="container">
+   <div class="jumbotron text-center">
+       <h1>Hello world!</h1>
+       <p>Lorem ipsum</p>
+       <button class="btn btn-primary btn-lg" ng-click="count=count+1" ng-init="count=0">Primary action</button>
+   </div>
+
+   <div class="row" ng-controller="DevCtrl">
+       <div class="col-lg-3 col-sm-3"><span>count: {{count}}</span></div>
+       <div class="col-lg-9 col-sm-9">
+          <ul>
+            <li ng-repeat="x in names">
+              {{ x.deviceId + ', ' + x.connectionState }}
+            </li>
+          </ul>
+       </div>
+   </div>
+</div>
+
+</body>
+</html>
