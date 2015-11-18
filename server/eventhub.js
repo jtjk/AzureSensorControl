@@ -49,35 +49,28 @@ var recvAddr = eventHubName + '/ConsumerGroups/$default/Partitions/';
 var msgVal = Math.floor(Math.random() * 1000000);
 
 var client = new AMQPClient(Policy.EventHub);
+
 var errorHandler = function(myIdx, rx_err) { console.warn('==> RX ERROR: ', rx_err); };
+
 var messageHandler = function (myIdx, msg) {
-  console.log('received(' + myIdx + '): ', msg.body);
-  filterOffset = msg.annotations.value["x-opt-offset"];
-  console.log(filterOffset);
- //this.send(msg.body);
-  //if (msg.annotations) console.log('annotations: ', msg.annotations);
-  //if (msg.body.DataValue === msgVal) {
-  //  client.disconnect().then(function () {
-  //    console.log('disconnected, when we saw the value we inserted.');
-  //    process.exit(0);
-  //  });
-  //}
+  this.mydevice = msg.body.windSpeed; // TODO: save properly to proper data structure
 };
 
 function range(begin, end) {
   return Array.apply(null, new Array(end - begin)).map(function(_, i) { return i + begin; });
 }
 
-var createPartitionReceiver = function(curIdx, curRcvAddr, filterOption,res) {
+var createPartitionReceiver = function(curIdx, curRcvAddr, filterOption,map) {
   return client.createReceiver(curRcvAddr, filterOption)
     .then(function (receiver) {
       //res.send("for me");
-      receiver.on('message', messageHandler.bind(res, curIdx));
+      receiver.on('message', messageHandler.bind(map, curIdx));
       receiver.on('errorReceived', errorHandler.bind(null, curIdx));
     });
 };
 
-function connect(res, offset) {
+function connect(map) {
+
   var filterOption; // todo:: need a x-opt-offset per partition.
   if (filterOffset) {
     filterOption = {
@@ -88,12 +81,11 @@ function connect(res, offset) {
     };
   }
 
-//  res.send("wait");
   client.connect(uri)
     .then(function () {
       return Promise.all([
         Promise.map(range(0, numPartitions), function(idx) {
-          return createPartitionReceiver(idx, recvAddr + idx, filterOption,res);
+          return createPartitionReceiver(idx, recvAddr + idx, filterOption,map);
         })
       ]);
     })

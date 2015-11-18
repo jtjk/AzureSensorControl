@@ -18,6 +18,10 @@ message.ack = 'full';
 var express = require('express');
 var app = express();
 
+// TODO: Change. this is temporary data structure. Use your own device names here
+var obj = {'mydevice': 0, 'measurementdev': 0};
+eventhub.connect(obj);
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -26,8 +30,7 @@ app.use(function(req, res, next) {
 
 app.get('/messages/:id', function (req, res) {
   console.log('**listing messages...',req.params.id);
-  eventhub.connect(res, "165888");
-  res.send("jippii" + eventhub.getOffset());
+  res.send("" + obj[req.params.id]);
 
 })
 app.get('/device/:id', function (req, res) {

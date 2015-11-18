@@ -33,3 +33,15 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
 				console.log("error");
 			})
   }]);
+
+sensorControllers.controller('TemperatureCtrl', ['$scope', '$http',
+  function($scope, $http) {
+  	    console.log("fetching data for device", $scope.deviceId)
+		$http.get('http://localhost:3000/messages/' + $scope.deviceId).
+			success(function(data,status,headers,config) {
+				$scope.temp = data;
+			}).
+			error(function(data,status,headers,config) {
+				console.log("error");
+			})
+  }]);

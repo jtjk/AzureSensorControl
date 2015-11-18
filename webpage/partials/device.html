@@ -3,6 +3,9 @@
     <a href="#device/{{x.deviceId}}">{{ device.deviceId }}</a>
   </div>
   <div class="sidebar__content">
-    {{ device.connectionStateUpdatedTime }}<br>
+    {{ device.connectionStateUpdatedTime }}
+    <div ng-controller="TemperatureCtrl">
+    	{{temp}}
+    </div>
   </div>
 </div>
