@@ -22,8 +22,21 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.get('/device/:id', function (req, res) {
+  console.log('**listing devices...',req.params.id);
+  registry.list(function (err, response, deviceList) {
+
+    deviceList.forEach(function (device) {
+      if (device.deviceId == req.params.id) {
+          res.send(device);
+          console.log(device);
+      }
+    });
+
+  });
+})
 app.get('/devices', function (req, res) {
-  console.log('**listing devices...');
+  console.log('**listing devices...',req);
   registry.list(function (err, response, deviceList) {
     res.send(deviceList);
 
