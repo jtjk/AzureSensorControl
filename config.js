@@ -1,7 +1,13 @@
 
 var config = {
     host: 'http://localhost:3000',
-    connectionString: 'HostName=olfactomicstest.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=Og3YGaMvAs41ygP65dhqLlK0jmfvU+Q4d5ghZ1ijgEI='
+    connectionString: 'HostName=myiothub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=mysaskey',
+    deviceConnectionString: 'HostName=myiothub.azure-devices.net;DeviceId=mydevice;SharedAccessKey=mysaskey',
+    serviceBusHost: 'myiothub-eventhub-compatible-endpoint hostname',
+    eventHubName: 'myiothub-eventhub-compatiblename',
+    partitions: 2,
+    SASKeyName: 'iothubowner',
+    SASKey: 'mysaskey'
 };
 
 

@@ -8,6 +8,8 @@
   "dependencies": {
     "azure-iothub": "1.0.0-preview.5",
     "azure-iot-common": "1.0.0-preview.5",
-    "express": "4.13.3"
+    "express": "4.13.3",
+    "amqp10": "^2.0.0",
+    "bluebird": "^3.0.5"
   }
 }
