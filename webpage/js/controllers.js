@@ -24,6 +24,18 @@ sensorControllers.controller('DevDetailRouteCtrl', ['$scope', '$routeParams',
 
 sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
   function($scope, $http) {
+  	  	$scope.send = function() {
+
+    		$scope.msg = 'clicked';
+			$http.get('http://localhost:3000/sendmessage/' + $scope.deviceId + "?msg=hello").
+				success(function(data,status,headers,config) {
+					$scope.device = data;
+				}).
+				error(function(data,status,headers,config) {
+					console.log("error");
+				})
+
+  		}
   	    console.log("fetching data for device", $scope.deviceId)
 		$http.get('http://localhost:3000/device/' + $scope.deviceId).
 			success(function(data,status,headers,config) {

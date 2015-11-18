@@ -27,6 +27,19 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+app.get('/sendmessage/:id', function (req, res) {
+  console.log('**send message...',req.params.id, req.query.msg);
+  var client = Client.fromConnectionString(config.connectionString);
+  client.open(function (err) {
+    if (err) handleErrorAndExit(err);
+    client.send(req.params.id, req.query.msg, function (err) {
+      if (err) handleErrorAndExit(err);
+      console.log("sent msg");
+      client.close();
+    });
+  });
+
+})
 
 app.get('/messages/:id', function (req, res) {
   console.log('**listing messages...',req.params.id);
@@ -55,14 +68,6 @@ app.get('/devices', function (req, res) {
   //    var key = device.authentication ? device.authentication.SymmetricKey.primaryKey : '<no primary key>';
       console.log(device.deviceId);
 /*
-      var client = Client.fromConnectionString(connectionString);
-      client.open(function (err) {
-        if (err) handleErrorAndExit(err);
-        client.send(device.deviceId, message, function (err) {
-          if (err) handleErrorAndExit(err);
-          console.log("sent msg");
-        });
-      });
 */
     });
 
