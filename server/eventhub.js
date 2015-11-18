@@ -3,21 +3,15 @@ var Promise = require('bluebird'),
     AMQPClient  = require('amqp10').Client,
     Policy = require('amqp10').Policy,
     translator = require('amqp10').translator;
-var config = require('./../config.js')
+var config = require('./../config.js');
+var express = require('express');
+
+
 
 // Set the offset for the EventHub - this is where it should start receiving from, and is typically different for each partition
 // Here, I'm setting a global offset, just to show you how it's done. See node-sbus-amqp10 for a wrapper library that will
 // take care of this for you.
 var filterOffset; // example filter offset value might be: 43350;
-var filterOption; // todo:: need a x-opt-offset per partition.
-if (filterOffset) {
-  filterOption = {
-    attach: { source: { filter: {
-      'apache.org:selector-filter:string': translator(
-        ['described', ['symbol', 'apache.org:selector-filter:string'], ['string', "amqp.annotation.x-opt-offset > '" + filterOffset + "'"]])
-    } } }
-  };
-}
 
 var settingsFile = process.argv[2];
 var settings = {};
@@ -58,49 +52,57 @@ var client = new AMQPClient(Policy.EventHub);
 var errorHandler = function(myIdx, rx_err) { console.warn('==> RX ERROR: ', rx_err); };
 var messageHandler = function (myIdx, msg) {
   console.log('received(' + myIdx + '): ', msg.body);
-  if (msg.annotations) console.log('annotations: ', msg.annotations);
-  if (msg.body.DataValue === msgVal) {
-    client.disconnect().then(function () {
-      console.log('disconnected, when we saw the value we inserted.');
-      process.exit(0);
-    });
-  }
+  filterOffset = msg.annotations.value["x-opt-offset"];
+  console.log(filterOffset);
+ //this.send(msg.body);
+  //if (msg.annotations) console.log('annotations: ', msg.annotations);
+  //if (msg.body.DataValue === msgVal) {
+  //  client.disconnect().then(function () {
+  //    console.log('disconnected, when we saw the value we inserted.');
+  //    process.exit(0);
+  //  });
+  //}
 };
 
 function range(begin, end) {
   return Array.apply(null, new Array(end - begin)).map(function(_, i) { return i + begin; });
 }
 
-var createPartitionReceiver = function(curIdx, curRcvAddr, filterOption) {
+var createPartitionReceiver = function(curIdx, curRcvAddr, filterOption,res) {
   return client.createReceiver(curRcvAddr, filterOption)
     .then(function (receiver) {
-      receiver.on('message', messageHandler.bind(null, curIdx));
+      //res.send("for me");
+      receiver.on('message', messageHandler.bind(res, curIdx));
       receiver.on('errorReceived', errorHandler.bind(null, curIdx));
     });
 };
 
-client.connect(uri)
-  .then(function () {
-    return Promise.all([
+function connect(res, offset) {
+  var filterOption; // todo:: need a x-opt-offset per partition.
+  if (filterOffset) {
+    filterOption = {
+      attach: { source: { filter: {
+        'apache.org:selector-filter:string': translator(
+          ['described', ['symbol', 'apache.org:selector-filter:string'], ['string', "amqp.annotation.x-opt-offset > '" + offset + "'"]])
+      } } }
+    };
+  }
 
-      // TODO:: filterOption-> checkpoints are per partition.
-      Promise.map(range(0, numPartitions), function(idx) {
-        return createPartitionReceiver(idx, recvAddr + idx, filterOption);
-      })
-    ]);
-  })
-  .spread(function(sender, unused) {
-    sender.on('errorReceived', function (tx_err) { console.warn('===> TX ERROR: ', tx_err); });
-
-    // {'x-opt-partition-key': 'pk' + msgVal}
-    var message = { DataString: 'From Node', DataValue: msgVal };
-    var options = { annotations: { 'x-opt-partition-key': 'pk' + msgVal } };
-    return sender.send(message, options).then(function (state) {
-      // this can be used to optionally track the disposition of the sent message
-      console.log('state: ', state);
+//  res.send("wait");
+  client.connect(uri)
+    .then(function () {
+      return Promise.all([
+        Promise.map(range(0, numPartitions), function(idx) {
+          return createPartitionReceiver(idx, recvAddr + idx, filterOption,res);
+        })
+      ]);
+    })
+    .error(function (e) {
+      console.warn('connection error: ', e);
     });
-  })
-  .error(function (e) {
-    console.warn('connection error: ', e);
-  });
-
+}
+function getOffset() {
+  return filterOffset;
+}
+module.exports.connect = connect;
+module.exports.getOffset = getOffset;
