@@ -8,15 +8,11 @@ SensorControlApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
       when('/device/:deviceId', {
-        templateUrl: 'device.html',
+        templateUrl: 'partials/device.html',
         controller: 'DevDetailRouteCtrl'
       }).
-      when('/details', {
-        templateUrl: 'details.html',
-        controller: 'DevCtrl'
-      }).
       otherwise({
-        templateUrl: 'main.html',
+        templateUrl: 'partials/main.html',
         controller: 'DevCtrl'
       });
   }]);

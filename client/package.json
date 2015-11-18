@@ -1,12 +1,12 @@
 {
-  "name": "OlfactomicsDev",
+  "name": "SensorControlDev",
   "version": "0.0.1",
   "private":true,
-  "description": "Olfactomics Device Azure IoT Hub",
+  "description": "Device Azure IoT Hub",
   "main": "main.js",
     "author": "Microsoft Corp.",
   "license": "MIT",
   "dependencies": {
-    "azure-iot-device": "^1.0.0-preview.5"
+    "azure-iot-device": "^1.0.0-preview.6"
   }
 }
