@@ -11,7 +11,7 @@ var client = new device.Client.fromConnectionString(config.deviceConnectionStrin
 setInterval(function () {
   var windSpeed = 10 + (Math.random() * 4); // range: [10, 14]
   var data = JSON.stringify({
-    deviceId: 'myFirstDevice',
+    deviceId: 'mydevice',
     windSpeed: windSpeed
   });
   var message = new device.Message(data);

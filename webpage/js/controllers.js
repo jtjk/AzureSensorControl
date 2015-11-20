@@ -46,8 +46,9 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
 			})
   }]);
 
-sensorControllers.controller('TemperatureCtrl', ['$scope', '$http',
-  function($scope, $http) {
+sensorControllers.controller('TemperatureCtrl', ['$scope', '$http','$timeout',
+  function($scope, $http, $timeout) {
+        $scope.getData = function(){
   	    console.log("fetching data for device", $scope.deviceId)
 		$http.get('http://localhost:3000/messages/' + $scope.deviceId).
 			success(function(data,status,headers,config) {
@@ -56,4 +57,16 @@ sensorControllers.controller('TemperatureCtrl', ['$scope', '$http',
 			error(function(data,status,headers,config) {
 				console.log("error");
 			})
+        };
+
+	// Function to replicate setInterval using $timeout service.
+	  $scope.intervalFunction = function(){
+	    $timeout(function() {
+	      $scope.getData();
+	      $scope.intervalFunction();
+	    }, 1000)
+	  };
+
+	  // Kick off the interval
+	  $scope.intervalFunction();
   }]);
