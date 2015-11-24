@@ -3,9 +3,9 @@
     <a href="#device/{{x.deviceId}}">{{ device.deviceId }}</a>
   </div>
   <div class="sidebar__content">
-    {{ device.connectionStateUpdatedTime }}
-    <div ng-controller="TemperatureCtrl">
-    	{{temp}}
+    Last update: {{ device.connectionStateUpdatedTime }}
+    <div ng-controller="WindspeedCtrl">
+    	Windspeed: {{temp}}
     </div>
     <div>
 	    <button class="btn btn-primary"  ng-click="send()">

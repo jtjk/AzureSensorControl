@@ -46,7 +46,7 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
 			})
   }]);
 
-sensorControllers.controller('TemperatureCtrl', ['$scope', '$http','$timeout',
+sensorControllers.controller('WindspeedCtrl', ['$scope', '$http','$timeout',
   function($scope, $http, $timeout) {
         $scope.getData = function(){
   	    console.log("fetching data for device", $scope.deviceId)
