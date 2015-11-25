@@ -7,7 +7,8 @@ var config = {
     eventHubName: 'myiothub-eventhub-compatiblename',
     partitions: 2,
     SASKeyName: 'iothubowner',
-    SASKey: 'mysaskey'
+    SASKey: 'mysaskey',
+    DeviceId: 'mydevice'
 };
 
 

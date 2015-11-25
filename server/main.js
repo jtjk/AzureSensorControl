@@ -19,7 +19,9 @@ var express = require('express');
 var app = express();
 
 // TODO: Change. this is temporary data structure. Use your own device names here
-var obj = {'mydevice': 0, 'measurementdev': 0};
+var jsonstr = '{"' + config.DeviceId + '": 0}';
+var obj = JSON.parse(jsonstr);
+
 eventhub.connect(obj);
 
 app.use(function(req, res, next) {
