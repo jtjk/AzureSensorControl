@@ -3,69 +3,53 @@
 
 var host = "localhost";
 
-// open websocket to listen for messages
+var sensorControllers = angular.module('sensorControllers', []);
 var ws = new WebSocket("ws://" + host + ":8080");
 
+var timeout = 2000;
 ws.onopen = function()
 {
-	ws.send("Message to send");
-	console.log("sent ws messge just because we can");
-};
+	timeout = 0;
+}
 
-var sensorControllers = angular.module('sensorControllers', []);
-
-sensorControllers.controller('DevCtrl', ['$scope', '$http',
-  function($scope, $http) {
-		$http.get('http://' + host + ':3000/devices').
-			success(function(data,status,headers,config) {
-				$scope.names = data;
-			}).
-			error(function(data,status,headers,config) {
-				console.log("error");
-			})
-  }]);
-
-
-sensorControllers.controller('DevDetailRouteCtrl', ['$scope', '$routeParams',
-  function($scope, $routeParams) {
-    console.log("Loading device page", $routeParams.deviceId)
-    $scope.deviceId = $routeParams.deviceId;
-  }]);
-
-sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
-  function($scope, $http) {
-  	  	$scope.send = function() {
-
-    		$scope.msg = 'clicked';
-			$http.get('http://' + host + ':3000/sendmessage/' + $scope.deviceId + "?msg=hello").
-				success(function(data,status,headers,config) {
-					$scope.device = data;
-				}).
-				error(function(data,status,headers,config) {
-					console.log("error");
-				})
-
-  		}
-  	    console.log("fetching data for device", $scope.deviceId)
-		$http.get('http://' + host + ':3000/device/' + $scope.deviceId).
-			success(function(data,status,headers,config) {
-				$scope.device = data;
-			}).
-			error(function(data,status,headers,config) {
-				console.log("error");
-			})
-  }]);
-
-sensorControllers.controller('WindspeedCtrl', ['$scope', '$http','$timeout',
-  function($scope, $http, $timeout) {
+sensorControllers.controller('MainCtrl', ['$scope', '$http', function($scope, $http) {
+	setTimeout(function() {
+		ws.send(JSON.stringify({"method": "devices"}));
+	},timeout);
 	ws.onmessage = function (evt)
 	{
-		var received_msg = JSON.parse(evt.data);
-		if (received_msg.deviceId == $scope.deviceId) {
+		var msg = JSON.parse(evt.data);
+		if (msg.response == "deviceList") {
 			$scope.$apply(function() {
-				$scope.windspeed = received_msg.windSpeed;
+				$scope.names = msg.body;
 			});
 		}
-		console.log(received_msg);
 	};
-  }]);
+}]);
+
+sensorControllers.controller('DeviceCtrl', ['$scope', '$routeParams', function($scope, $routeParams) {
+	$scope.deviceId = $routeParams.deviceId;
+	setTimeout(function() {
+		ws.send(JSON.stringify({"method": "device", "deviceId": $scope.deviceId}));
+	},timeout);
+	ws.onmessage = function (evt)
+	{
+		var msg = JSON.parse(evt.data);
+		if (msg.response == "device") {
+			$scope.$apply(function() {
+				$scope.device = msg.body;
+			});
+		}
+		else {
+			if (msg.body.deviceId == $scope.deviceId) {
+				$scope.$apply(function() {
+					$scope.windspeed = msg.body.windSpeed;
+				});
+			}
+		}
+	};
+	$scope.send = function() {
+		ws.send(JSON.stringify({"method": "sendmessage", "deviceId": $scope.deviceId, "message": "hello"}));
+	}
+}]);
+

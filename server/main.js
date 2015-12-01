@@ -15,16 +15,14 @@ var message = new Message('hello');
 message.messageId = 'unique-message-id';
 message.ack = 'full';
 
-var app = express();
-
 var ws_connections = [];
 
+// Create eventhub receiver and send all events to websocket by adding some extra json with that event hub message
 var startTime = Date.now();
 var ehClient = new EventHubClient(config.connectionString, 'messages/events/');
 ehClient.GetPartitionIds().then(function(partitionIds) {
 	partitionIds.forEach(function(partitionId) {
 		ehClient.CreateReceiver('$Default', partitionId).then(function(receiver) {
-			// start receiving
 			receiver.StartReceive(startTime).then(function() {
 				receiver.on('error', function(error) {
 					serviceError(error.description);
@@ -35,10 +33,8 @@ ehClient.GetPartitionIds().then(function(partitionIds) {
 						var ws;
 						for (var x = 0;  x<ws_connections.length;x++) {
 							ws = ws_connections[x];
-							ws.send(JSON.stringify(eventData.Bytes));
+              ws.send('{"response": "windSpeed", "body":' + JSON.stringify(eventData.Bytes)+'}');
 						}
-						console.log(eventData.Bytes);
-						console.log('');
 					}
 				});
 			});
@@ -48,67 +44,59 @@ ehClient.GetPartitionIds().then(function(partitionIds) {
 	return partitionIds;
 });
 
-
+// listen for websocket connections and handle incoming messages
 wss.on('connection', function(ws) {
 	ws_connections.push(ws);
 	ws.on('message', function(message) {
-		console.log('received: %s', message);
+		console.log(message);
+    var json = JSON.parse(message);
+
+    if (json.method == "devices") {
+      console.log("get devices");
+      registry.list(function (err, response, deviceList) {
+        ws.send('{"response": "deviceList", "body":' + JSON.stringify(deviceList)+'}');
+        deviceList.forEach(function (device) {
+          console.log(device.deviceId);
+        });
+      });
+    }
+
+    if (json.method == "device") {
+      console.log("get device");
+      registry.list(function (err, response, deviceList) {
+        deviceList.forEach(function (device) {
+          if (device.deviceId == json.deviceId) {
+            console.log(device.deviceId);
+            ws.send('{"response": "device", "body":' + JSON.stringify(device)+'}');
+          }
+        });
+      });
+    }
+
+    if (json.method == "sendmessage") {
+      console.log("send message");
+      var client = Client.fromConnectionString(config.connectionString);
+      client.open(function (err) {
+        if (err) handleError(res, err);
+        client.send(json.deviceId, json.message, function (err) {
+          if (err) handleError(res, err);
+          console.log("sent msg");
+          client.close();
+        });
+      });
+    }
+
 	});
+
 	ws.on('close', function() {
 		var index = ws_connections.indexOf(ws);
 		if (index > -1) {
 			ws_connections.splice(index,1);
 		}
 	});
-	ws.send('something');
 });
 
-app.use(function(req, res, next) {
-	res.header("Access-Control-Allow-Origin", "*");
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-	next();
-});
 
-app.get('/sendmessage/:id', function (req, res) {
-	console.log('**send message...',req.params.id, req.query.msg);
-	var client = Client.fromConnectionString(config.connectionString);
-	client.open(function (err) {
-		if (err) handleErrorAndExit(res, err);
-		client.send(req.params.id, req.query.msg, function (err) {
-			if (err) handleErrorAndExit(res, err);
-			console.log("sent msg");
-			client.close();
-			res.status(200).json({status:"ok"})
-		});
-	});
-})
-
-
-app.get('/device/:id', function (req, res) {
-	console.log('**listing devices...',req.params.id);
-	registry.list(function (err, response, deviceList) {
-		deviceList.forEach(function (device) {
-			if (device.deviceId == req.params.id) {
-				res.send(device);
-				console.log(device);
-			}
-		});
-	});
-})
-
-app.get('/devices', function (req, res) {
-	console.log('**listing devices...',req);
-	registry.list(function (err, response, deviceList) {
-		res.send(deviceList);
-		deviceList.forEach(function (device) {
-			console.log(device.deviceId);
-		});
-	});
-})
-
-app.listen(3000);
-
-function handleErrorAndExit(res, err){
+function handleError(res, err){
 	console.log(err);
-	res.status(500).json({status:err})
 }
