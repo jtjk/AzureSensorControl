@@ -1,8 +1,10 @@
 /* Controllers */
 'use strict';
 
+var host = "localhost";
+
 // open websocket to listen for messages
-var ws = new WebSocket("ws://oxide.cloudapp.net:8080");
+var ws = new WebSocket("ws://" + host + ":8080");
 
 ws.onopen = function()
 {
@@ -14,7 +16,7 @@ var sensorControllers = angular.module('sensorControllers', []);
 
 sensorControllers.controller('DevCtrl', ['$scope', '$http',
   function($scope, $http) {
-		$http.get('http://localhost:3000/devices').
+		$http.get('http://' + host + ':3000/devices').
 			success(function(data,status,headers,config) {
 				$scope.names = data;
 			}).
@@ -35,7 +37,7 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
   	  	$scope.send = function() {
 
     		$scope.msg = 'clicked';
-			$http.get('http://localhost:3000/sendmessage/' + $scope.deviceId + "?msg=hello").
+			$http.get('http://' + host + ':3000/sendmessage/' + $scope.deviceId + "?msg=hello").
 				success(function(data,status,headers,config) {
 					$scope.device = data;
 				}).
@@ -45,7 +47,7 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
 
   		}
   	    console.log("fetching data for device", $scope.deviceId)
-		$http.get('http://localhost:3000/device/' + $scope.deviceId).
+		$http.get('http://' + host + ':3000/device/' + $scope.deviceId).
 			success(function(data,status,headers,config) {
 				$scope.device = data;
 			}).
