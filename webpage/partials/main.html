@@ -3,10 +3,10 @@
 </div>
 
 
-<div class="row" ng-controller="DevCtrl">
+<div class="row">
    <div class="col-lg-2 col-sm-3" ng-repeat="x in names">
         <div class="sidebar">
-          <div class="header" ng-click="count=count+1" ng-init="count=0">
+          <div class="header">
             <a href="#device/{{x.deviceId}}">{{ x.deviceId }}</a>
           </div>
           <div class="sidebar__content">

@@ -1,6 +1,14 @@
+/* Controllers */
 'use strict';
 
-/* Controllers */
+// open websocket to listen for messages
+var ws = new WebSocket("ws://oxide.cloudapp.net:8080");
+
+ws.onopen = function()
+{
+	ws.send("Message to send");
+	console.log("sent ws messge just because we can");
+};
 
 var sensorControllers = angular.module('sensorControllers', []);
 
@@ -48,25 +56,14 @@ sensorControllers.controller('DevDetailFetchCtrl', ['$scope', '$http',
 
 sensorControllers.controller('WindspeedCtrl', ['$scope', '$http','$timeout',
   function($scope, $http, $timeout) {
-        $scope.getData = function(){
-  	    console.log("fetching data for device", $scope.deviceId)
-		$http.get('http://localhost:3000/messages/' + $scope.deviceId).
-			success(function(data,status,headers,config) {
-				$scope.temp = data;
-			}).
-			error(function(data,status,headers,config) {
-				console.log("error");
-			})
-        };
-
-	// Function to replicate setInterval using $timeout service.
-	  $scope.intervalFunction = function(){
-	    $timeout(function() {
-	      $scope.getData();
-	      $scope.intervalFunction();
-	    }, 1000)
-	  };
-
-	  // Kick off the interval
-	  $scope.intervalFunction();
+	ws.onmessage = function (evt)
+	{
+		var received_msg = JSON.parse(evt.data);
+		if (received_msg.deviceId == $scope.deviceId) {
+			$scope.$apply(function() {
+				$scope.windspeed = received_msg.windSpeed;
+			});
+		}
+		console.log(received_msg);
+	};
   }]);

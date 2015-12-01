@@ -17,7 +17,10 @@ setInterval(function () {
   var message = new device.Message(data);
   message.properties.add('myproperty', 'myvalue');
   console.log("Sending message: " + message.getData());
-  client.sendEvent(message, printResultFor('send'));
+  client.sendEvent(message, function(err,res) {
+        //console.log(err);
+    });
+
 }, 1000);
 
 // Monitor messages from IoT Hub and print them in the console.

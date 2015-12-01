@@ -4,7 +4,7 @@
   "private":true,
   "description": "Device Azure IoT Hub",
   "main": "main.js",
-    "author": "Microsoft Corp.",
+  "author": "Janne Koskinen",
   "license": "MIT",
   "dependencies": {
     "azure-iot-device": "^1.0.0-preview.6"
